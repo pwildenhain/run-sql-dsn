@@ -5,7 +5,7 @@ import pyodbc
 from tabulate import tabulate
 import typer
 
-from args_help import AppArgs
+from .args_help import AppArgs
 
 app = typer.Typer()
 
@@ -38,7 +38,7 @@ def run(
         return
 
     col_names = [
-        typer.style(column[0], bold=True) for column in col_names[:display_column_limit]
+        typer.style(column, bold=True) for column in col_names[:display_column_limit]
     ]
     result = [row[:display_column_limit] for row in result[:display_row_limit]]
     tablular_data = tabulate(result, headers=col_names, tablefmt=display_format)
