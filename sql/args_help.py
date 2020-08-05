@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import typer
 
 
@@ -15,6 +16,12 @@ class AppArgs:
         help="ODBC dsn to connect to through pyodbc.connect()",
         envvar="RUN_SQL_DSN",
         show_default=False,
+    )
+    csv: bool = typer.Option(False, "--csv", help="Export query results to a csv file")
+    output_path: Path = typer.Option(
+        "data_export.csv",
+        help="Location to save query result when --csv is used",
+        writable=True,
     )
     display_column_limit: int = typer.Option(
         10, min=1, help="Number of columns to display in output"
