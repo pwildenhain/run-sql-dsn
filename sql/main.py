@@ -1,37 +1,59 @@
+from pathlib import Path
+
 import pyodbc
 from tabulate import tabulate
 import typer
 
+from args_help import AppArgs
+
 app = typer.Typer()
+
+command_args = AppArgs()
 
 
 @app.command()
 def run(
-    sql: str = typer.Argument(..., help="SQL string to execute"),
-    dsn: str = typer.Argument(
-        "",
-        help="ODBC dsn to connect to through pyodbc.connect()",
-        envvar="RUN_SQL_DSN",
-        show_default=False,
-    ),
-    column_limit: int = typer.Option(10, help="Number of columns to display in output"),
-    row_limit: int = typer.Option(10, help="Number of rows to display in output"),
-    display_format: str = typer.Option(
-        "grid",
-        help="Display style for output. See the tabulate package for more details",
-    ),
+    sql: str = command_args.sql,
+    dsn: str = command_args.dsn,
+    display_column_limit: int = command_args.display_column_limit,
+    display_row_limit: int = command_args.display_row_limit,
+    display_format: str = command_args.display_format,
 ):
-    """Run a SQL query using and ODBC data source name (dsn)"""
+    """Run a SQL query using an ODBC data source name (dsn)"""
     conn = pyodbc.connect(f"dsn={dsn}")
     cursor = conn.cursor()
-    cursor.arraysize = row_limit
-    result = cursor.execute(sql).fetchmany()
+    result = cursor.execute(sql).fetchall()
     conn.close()
 
-    col_names = [typer.style(column[0], bold=True) for column in cursor.description]
+    col_names = [
+        typer.style(column[0], bold=True)
+        for column in cursor.description[:display_column_limit]
+    ]
+    result = [row[:display_column_limit] for row in result[:display_row_limit]]
     tablular_data = tabulate(result, headers=col_names, tablefmt=display_format)
 
     typer.echo(tablular_data)
+
+
+@app.command()
+def run_file(
+    sql_file: Path = command_args.sql_file,
+    dsn: str = command_args.dsn,
+    display_column_limit: int = command_args.display_column_limit,
+    display_row_limit: int = command_args.display_row_limit,
+    display_format: str = command_args.display_format,
+):
+    """Run a SQL file using an ODBC data source name (dsn)"""
+    with open(sql_file) as sql_file_io:
+        sql = sql_file_io.read()
+
+    run(
+        sql=sql,
+        dsn=dsn,
+        display_column_limit=display_column_limit,
+        display_row_limit=display_row_limit,
+        display_format=display_format,
+    )
 
 
 if __name__ == "__main__":
