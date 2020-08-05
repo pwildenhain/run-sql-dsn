@@ -69,7 +69,3 @@ def run_file(
         display_row_limit=display_row_limit,
         display_format=display_format,
     )
-
-
-if __name__ == "__main__":
-    app()
