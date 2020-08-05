@@ -5,4 +5,5 @@ setup(
     version="0.1",
     install_requires=["pyodbc", "tabulate", "typer[all]"],
     packages=["sql"],
+    entry_points={"console_scripts": ["sql = sql.main:app",],},
 )
